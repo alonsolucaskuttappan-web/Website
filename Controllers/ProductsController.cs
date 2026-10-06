@@ -1,68 +1,49 @@
+
 using Microsoft.AspNetCore.Mvc;
-
 using Website.Data;
-
 using Website.Models;
 
- 
-
 namespace Website.Controllers
-
 {
-
     public class ProductsController : Controller
-
     {
-
         private readonly ApplicationDbContext _db;
 
-        public ProductsController(ApplicationDbContext db) { _db = db; }
-
- 
+        public ProductsController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
 
         // shows the list
-
-        public IActionResult Index()
-
+        public IActionResult Index(string? searchString)
         {
+            var products = _db.Products.AsQueryable();
 
-            var products = _db.Products.ToList();
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                products = products.Where(p => p.Name.ToLower().Contains(searchString.ToLower()));
+            }
 
-            return View(products);
-
+            ViewData["searchString"] = searchString;
+            return View(products.ToList());
         }
-
- 
 
         // shows the empty add-form
-
         public IActionResult Create()
-
         {
-
             return View();
-
         }
-
- 
 
         // saves a new product
-
         [HttpPost]
-
         public IActionResult Create(Product product)
-
         {
-
             _db.Products.Add(product);
-
             _db.SaveChanges();
-
             return RedirectToAction("Index");
-
         }
 
- // EDIT - show the edit form
+        // EDIT - show the edit form
         public IActionResult Edit(int id)
         {
             var product = _db.Products.Find(id);
@@ -90,10 +71,6 @@ namespace Website.Controllers
             }
             return RedirectToAction("Index");
         }
-
-
     }
-
 }
-
  
